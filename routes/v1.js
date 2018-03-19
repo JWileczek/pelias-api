@@ -139,7 +139,7 @@ function addRoutes(app, peliasConfig) {
 
   // fallback to coarse reverse when regular reverse didn't return anything
   const coarseReverseShouldExecute = all(
-    isPipServiceEnabled, not(hasRequestErrors), not(hasResponseData)
+    isPipServiceEnabled, not(hasRequestErrors), not(hasResponseData), not(isOnlyNonAdminLayers)
   );
 
   const libpostalShouldExecute = all(
@@ -345,7 +345,7 @@ function addRoutes(app, peliasConfig) {
     reverse: createRouter([
       sanitizers.reverse.middleware,
       middleware.requestLanguage,
-      middleware.calcSize(),
+      middleware.calcSize(2),
       controllers.search(peliasConfig.api, esclient, queries.reverse, nonCoarseReverseShouldExecute),
       controllers.coarse_reverse(pipService, coarseReverseShouldExecute),
       postProc.distances('point.'),
