@@ -1,0 +1,91 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Pelias API Overview",
+    "version": "v1"
+  },
+  "paths": {
+    "/v1": {
+      "get": {
+        "operationId": "v1",
+        "summary": "Version Landing Page",
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "examples": {
+              "text/html": "<style>html{font-family:monospace}</style><h1>Pelias API</h1>\n<h3>Version: <a href=\"https://github.com/venicegeo/pelias-api/releases\">1.0</a></h3>\n<h3><a href=\"https://github.com/venicegeo/pelias-documentation/blob/master/README.md\">View our documentation on GitHub</a></h3>"
+            }
+          }
+        }
+      }
+    },
+    "/v1/attribution": {
+      "get": {
+        "operationId": "attribution",
+        "summary": "Attribution Page",
+        "produces": [
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "examples": {
+              "text/html": "<style>html{font-family:monospace}</style><h1>Pelias API</h1>\n<h3>Version: <a href=\"https://github.com/venicegeo/pelias-api/releases\">1.0</a></h3>\n<h3><a href=\"https://github.com/venicegeo/pelias-documentation/blob/master/README.md\">View our documentation on GitHub</a></h3>\n<h2>Attribution</h2>\n<ul><li>Geocoding by <a href=\"https://mapzen.com/pelias\">Pelias</a> from <a href=\"https://mapzen.com\">Mapzen</a></li><li>Data from<ul><li><a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> © OpenStreetMap contributors under <a href=\"http://opendatacommons.org/licenses/odbl/\">ODbL</a></li><li><a href=\"http://openaddresses.io\">OpenAddresses</a> under a <a href=\"https://github.com/openaddresses/openaddresses/blob/master/sources/LICENSE\">Creative Commons Zero</a> public domain designation</li><li><a href=\"http://www.geonames.org/\">GeoNames</a> under <a href=\"https://creativecommons.org/licenses/by/2.0/\">CC-BY-3.0</a></li><li><a href=\"http://whosonfirst.mapzen.com\">WhosOnFirst</a> under <a href=\"https://github.com/whosonfirst/whosonfirst-data/blob/master/LICENSE.md\">various licenses</a></li><li><a href=\"http://geonames.nga.mil/gns/html/index.html\">Geographic Names Database</a></li></ul></li></ul>"
+            }
+          }
+        }
+      }
+    },
+    "/v1/status": {
+      "get": {
+        "operationId": "status",
+        "summary": "System Status Page",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "examples": {
+              "text/plain": "status:ok"
+            }
+          }
+        }
+      }
+    },
+    "/v1/place": {
+      "get": {
+        "operationId": "place",
+        "summary": "Place Search",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "Place ID(s)",
+            "type": "array",
+            "items": [
+              {"type":"string"}
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "examples": {
+              "application/json": "// 20180525142043\n// https://pelias.dev.dev.east.paas.geointservices.io/v1/place?ids=whosonfirst:country:85633147\n\n{\n  \"geocoding\": {\n    \"version\": \"0.2\",\n    \"attribution\": \"http://pelias.mapzen.com/v1/attribution\",\n    \"query\": {\n      \"ids\": [\n        {\n          \"source\": \"whosonfirst\",\n          \"layer\": \"country\",\n          \"id\": \"85633147\"\n        }\n      ],\n      \"private\": false,\n      \"lang\": {\n        \"name\": \"English\",\n        \"iso6391\": \"en\",\n        \"iso6393\": \"eng\",\n        \"defaulted\": false\n      }\n    },\n    \"engine\": {\n      \"name\": \"Pelias\",\n      \"author\": \"Mapzen\",\n      \"version\": \"1.0\"\n    },\n    \"timestamp\": 1527272263786\n  },\n  \"type\": \"FeatureCollection\",\n  \"features\": [\n    {\n      \"type\": \"Feature\",\n      \"geometry\": {\n        \"type\": \"Point\",\n        \"coordinates\": [\n          2.549047,\n          46.698481\n        ]\n      },\n      \"properties\": {\n        \"id\": \"85633147\",\n        \"gid\": \"whosonfirst:country:85633147\",\n        \"layer\": \"country\",\n        \"source\": \"whosonfirst\",\n        \"source_id\": \"85633147\",\n        \"name\": \"France\",\n        \"accuracy\": \"centroid\",\n        \"country\": \"France\",\n        \"country_gid\": \"whosonfirst:country:85633147\",\n        \"country_a\": \"FRA\",\n        \"label\": \"France\"\n      },\n      \"bbox\": [\n        -5.132188,\n        41.365694,\n        9.560119,\n        51.087167\n      ]\n    }\n  ],\n  \"bbox\": [\n    -5.132188,\n    41.365694,\n    9.560119,\n    51.087167\n  ]\n}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "consumes": [
+    "application/json"
+  ]
+}
