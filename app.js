@@ -1,5 +1,11 @@
 const app = require('express')();
 const jwt = require('jsonwebtoken');
+const swaggerUi = require('express-swaggerize-ui');
+
+app.use('/api-docs.json', function (req, res) {
+  res.json(require('./docs.json'));
+});
+app.use('/api-docs', swaggerUi());
 
 const peliasConfig = require( 'pelias-config' ).generate(require('./schema'));
 
