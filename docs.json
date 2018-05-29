@@ -252,6 +252,100 @@
           }
         }
       }
+    },
+    "/v1/nearby": {
+      "get": {
+        "operationId": "nearby",
+        "summary": "Nearby",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "point.lat",
+            "in": "query",
+            "description": "Latitude",
+            "type": "number",
+            "required": "true",
+            "minimum":-90,
+            "maximum":90
+          },
+          {
+            "name": "point.lon",
+            "in": "query",
+            "description": "Longitude",
+            "type": "number",
+            "required": "true",
+            "minimum":-180,
+            "maximum":180
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "examples": {
+              "application/json": "// 20180529102902// http://localhost:4000/v1/nearby?point.lat=38.96209&point.lon=-77.085681{  \"geocoding\": {    \"version\": \"0.2\",    \"attribution\": \"http://pelias.mapzen.com/v1/attribution\",    \"query\": {      \"size\": 10,      \"private\": false,      \"point.lat\": 38.96209,      \"point.lon\": -77.085681,      \"boundary.circle.lat\": 38.96209,      \"boundary.circle.lon\": -77.085681,      \"lang\": {        \"name\": \"English\",        \"iso6391\": \"en\",        \"iso6393\": \"eng\",        \"defaulted\": false      },      \"querySize\": 20    },    \"engine\": {      \"name\": \"Pelias\",      \"author\": \"Mapzen\",      \"version\": \"1.0\"    },    \"timestamp\": 1527604142012  },  \"type\": \"FeatureCollection\",  \"features\": [    {      \"type\": \"Feature\",      \"geometry\": {        \"type\": \"Point\",        \"coordinates\": [          -77.085681,          38.96209        ]      },      \"properties\": {        \"id\": \"370782105\",        \"gid\": \"whosonfirst:venue:370782105\",        \"layer\": \"venue\",        \"source\": \"whosonfirst\",        \"source_id\": \"370782105\",        \"name\": \"Chevy Chase Ctr Office Bldg\",        \"confidence\": 1,        \"distance\": 0,        \"accuracy\": \"point\",        \"country\": \"United States\",        \"country_gid\": \"whosonfirst:country:85633793\",        \"country_a\": \"USA\",        \"region\": \"District of Columbia\",        \"region_gid\": \"whosonfirst:region:85688741\",        \"region_a\": \"DC\",        \"county\": \"District of Columbia\",        \"county_gid\": \"whosonfirst:county:102084889\",        \"locality\": \"Washington\",        \"locality_gid\": \"whosonfirst:locality:85931779\",        \"neighbourhood\": \"Friendship Heights\",        \"neighbourhood_gid\": \"whosonfirst:neighbourhood:85820743\",        \"continent\": \"North America\",        \"continent_gid\": \"whosonfirst:continent:102191575\",        \"label\": \"Chevy Chase Ctr Office Bldg, Washington, DC, USA\"      },      \"bbox\": [        -77.085681,        38.96209,        -77.085681,        38.96209      ]    }  ],  \"bbox\": [    -77.085681,    38.960091,    -77.085381,    38.96209  ]}"
+            }
+          }
+        }
+      }
+    },
+    "/v1/convert": {
+      "get": {
+        "operationId": "convert",
+        "summary": "Convert",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "From",
+            "type": "string",
+            "required": "true",
+            "enum": ["decdeg", "mgrs"]
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "To",
+            "type": "string",
+            "required": "true",
+            "enum": ["decdeg", "mgrs"]
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude",
+            "type": "number",
+            "minimum":-90,
+            "maximum":90
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitude",
+            "type": "number",
+            "minimum":-180,
+            "maximum":180
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "examples": {
+              "application/json": "// 20180529103844// http://localhost:4000/v1/convert?from=mgrs&to=decdeg&q=38S%20MB%2043166%2086546{  \"type\": \"Feature\",  \"geometry\": {    \"type\": \"Point\",    \"coordinates\": [      44.38939,      33.31652    ]  },  \"properties\": {    \"name\": \"38SMB4316686546\",    \"from\": \"mgrs\",    \"to\": \"decdeg\"  }}"
+            }
+          }
+        }
+      }
     }
   },
   "consumes": [
