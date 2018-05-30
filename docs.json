@@ -67,7 +67,7 @@
           {
             "name": "ids",
             "in": "query",
-            "description": "Place ID(s)",
+            "description": "Specific place ID(s) to query",
             "type": "array",
             "items": {"type":"string", "pattern":"^[A-z]*.:[A-z]*.:[0-9]*$"},
             "required": "true"
@@ -101,7 +101,7 @@
           {
             "name": "text",
             "in": "query",
-            "description": "Text Query",
+            "description": "Text query greater flexibility with partial matches and incomplete wording",
             "type": "string",
             "required": "true"
           }
@@ -133,7 +133,7 @@
           {
             "name": "text",
             "in": "query",
-            "description": "Text Query",
+            "description": "Standard text query.",
             "type": "string",
             "required": "true"
           }
@@ -165,7 +165,7 @@
           {
             "name": "text",
             "in": "query",
-            "description": "Text Query",
+            "description": "Standard text query with filtering by standard WOF properties",
             "type": "string",
             "required": "true"
           },
@@ -243,7 +243,7 @@
     "/v1/reverse": {
       "get": {
         "operationId": "reverse",
-        "summary": "Reverse",
+        "summary": "Reverse Search",
         "produces": [
           "application/json"
         ],
@@ -251,20 +251,16 @@
           {
             "name": "point.lat",
             "in": "query",
-            "description": "Latitude",
-            "type": "number",
-            "required": "true",
-            "minimum":-90,
-            "maximum":90
+            "description": "Latitude (decimal degrees)",
+            "type": "string",
+            "required": "true"
           },
           {
             "name": "point.lon",
             "in": "query",
-            "description": "Longitude",
-            "type": "number",
-            "required": "true",
-            "minimum":-180,
-            "maximum":180
+            "description": "Longitude (decimal degrees)",
+            "type": "string",
+            "required": "true"
           }
         ],
         "responses": {
@@ -286,7 +282,7 @@
     "/v1/nearby": {
       "get": {
         "operationId": "nearby",
-        "summary": "Nearby",
+        "summary": "Nearby search.",
         "produces": [
           "application/json"
         ],
@@ -294,20 +290,16 @@
           {
             "name": "point.lat",
             "in": "query",
-            "description": "Latitude",
-            "type": "number",
-            "required": "true",
-            "minimum":-90,
-            "maximum":90
+            "description": "Latitude (decimal degrees)",
+            "type": "string",
+            "required": "true"
           },
           {
             "name": "point.lon",
             "in": "query",
-            "description": "Longitude",
-            "type": "number",
-            "required": "true",
-            "minimum":-180,
-            "maximum":180
+            "description": "Longitude (decimal degrees)",
+            "type": "string",
+            "required": "true"
           }
         ],
         "responses": {
@@ -329,7 +321,7 @@
     "/v1/convert": {
       "get": {
         "operationId": "convert",
-        "summary": "Convert",
+        "summary": "Proxy to the MGRS GEOTRANS Conversion service",
         "produces": [
           "application/json"
         ],
@@ -337,7 +329,7 @@
           {
             "name": "from",
             "in": "query",
-            "description": "From",
+            "description": "Origin coordinate type",
             "type": "string",
             "required": "true",
             "enum": ["decdeg", "mgrs"]
@@ -345,7 +337,7 @@
           {
             "name": "to",
             "in": "query",
-            "description": "To",
+            "description": "Destination coordinate type",
             "type": "string",
             "required": "true",
             "enum": ["decdeg", "mgrs"]
@@ -353,18 +345,14 @@
           {
             "name": "lat",
             "in": "query",
-            "description": "Latitude",
-            "type": "number",
-            "minimum":-90,
-            "maximum":90
+            "description": "Latitude (decimal degrees)",
+            "type": "string"
           },
           {
             "name": "lon",
             "in": "query",
-            "description": "Longitude",
-            "type": "number",
-            "minimum":-180,
-            "maximum":180
+            "description": "Longitude (decimal degeres)",
+            "type": "string"
           },
           {
             "name": "q",
