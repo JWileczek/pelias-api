@@ -433,12 +433,32 @@ app.get ( '/status', routers.status );
 * @property {array} warnings
 * @property {array} errors
 */
+
 /**
 * @typedef peliasReturn
 * @property {object} geocoding
 * @property {string} type
 * @property {array} features
 * @property {array} bbox
+*/
+
+/**
+ * @typedef pointGeojsonGeometry
+ * @property {string} type
+ * @property {array} coordinates
+ */
+/**
+ * @typedef pointGeojsonProperties
+ * @property {string} name
+ * @property {string} from
+ * @property {string} to
+ */
+
+/**
+* @typedef convertReturn
+* @property {string} type
+* @property {...pointGeojsonGeometry.model} geometry
+* @property {pointGeojsonProperties.model} properties
 */
 
 /**
@@ -458,12 +478,69 @@ app.get ( '/status', routers.status );
 * @returns {peliasError.model} 400 - Bad request
 */
 app.get ( base + 'place', routers.place );
+/**
+* @route GET /autocomplete
+* @group v1 - Autocomplete Search
+* @param {string} text.query.required - Text query w/greater flexibility with partial matches and incomplete wording
+* @returns {peliasReturn.model} 200
+* @returns {peliasError.model} 400 - Bad request
+*/
 app.get ( base + 'autocomplete', routers.autocomplete );
+/**
+* @route GET /search
+* @group v1 - Search
+* @param {string} text.query.required - Standard text query.
+* @returns {peliasReturn.model} 200
+* @returns {peliasError.model} 400 - Bad request
+*/
 app.get ( base + 'search', authMethod, routers.search );
 app.post( base + 'search', authMethod, routers.search );
+/**
+* @route GET /search/structured
+* @group v1 - Structured Search
+* @param {string} text.query.required - Standard text query with filtering by standard WOF properties.
+* @param {string} venue.query - WOF Venue
+* @param {string} address.query - Address
+* @param {string} neighbourhood.query - Neighbourhood
+* @param {string} borough.query - Borough
+* @param {string} locality.query - Locality
+* @param {string} county.query - County
+* @param {string} region.query - Region
+* @param {string} postalcode.query - Postal Code
+* @param {string} country.query - Country
+* @returns {peliasReturn.model} 200
+* @returns {peliasError.model} 400 - Bad request
+*/
 app.get ( base + 'search/structured', authMethod, routers.structured );
+/**
+* @route GET /reverse
+* @group v1 - Reverse Search
+* @param {string} point-lat.query.required - Latitude (decimal degrees)
+* @param {string} point-lon.query.required - Longitude (decimal degrees)
+* @returns {peliasReturn.model} 200
+* @returns {peliasError.model} 400 - Bad request
+*/
 app.get ( base + 'reverse', authMethod, routers.reverse );
+/**
+* @route GET /nearby
+* @group v1 - Nearby Search
+* @param {string} point-lat.query.required - Latitude (decimal degrees)
+* @param {string} point-lon.query.required - Longitude (decimal degrees)
+* @returns {peliasReturn.model} 200
+* @returns {peliasError.model} 400 - Bad request
+*/
 app.get ( base + 'nearby', routers.nearby );
+/**
+* @route GET /convert
+* @group v1 - Proxy to the MGRS GEOTRANS Conversion service
+* @param {string} from.query.required - Origin coordinate type
+* @param {string} to.query.required - Destination coordinate type
+* @param {string} lat.query - Latitude (decimal degrees)
+* @param {string} lon.query - Longitude (decimal degrees)
+* @param {string} q.query - Text query
+* @returns {convertReturn.model} 200
+* @returns {string} errors
+*/
 app.get ( base + 'convert', authMethod, routers.convert );
 }
 /**
