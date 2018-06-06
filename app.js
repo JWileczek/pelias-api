@@ -1,11 +1,15 @@
 const app = require('express')();
 const jwt = require('jsonwebtoken');
 
+const expressSwagger = require('express-swagger-generator')(app);
 const peliasConfig = require( 'pelias-config' ).generate(require('./schema'));
 
 if( peliasConfig.api.accessLog ){
   app.use( require( './middleware/access_log' ).createAccessLogger( peliasConfig.api.accessLog ) );
 }
+
+
+expressSwagger( require( './config/swaggerOptions' ) );
 
 /** ----------------------- pre-processing-middleware ----------------------- **/
 
