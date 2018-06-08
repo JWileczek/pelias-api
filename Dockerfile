@@ -23,7 +23,7 @@ RUN apt-get update && \
     apt-get install -y vim curl
 
 # install node 6.x
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y nodejs
 
 # move original node and symlink
