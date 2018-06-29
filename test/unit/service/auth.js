@@ -1,4 +1,5 @@
-const proxyquire = require('proxyquire').noCallThru();
+const proxyquire = require('proxyquire').noCallThru(),
+      fs = require('fs');
 
 let testConfig = {
     'secret': 'Pelias JWT test',
@@ -35,7 +36,10 @@ module.exports.tests.functionality = (test, common) => {
           'headers': {
           }
         };
-      process.env.PUBLIC_KEY_PATH = './pk.pub';
+      let wstream = fs.createWriteStream('tmp.pub');
+      wstream.write('test');
+      wstream.end();
+      process.env.PUBLIC_KEY_PATH = './tmp.pub';
       let service = proxyquire('../../../service/auth', {
         'logger': {
           get: (section) => {
