@@ -2,7 +2,8 @@
 
 const jwtChecker = require('express-jwt'),
     peliasConfig = require( 'pelias-config' ).generate(require('../schema')),
-    jwt = require('jsonwebtoken');
+    jwt = require('jsonwebtoken'),
+    fs = require('fs');
     
 /**
  * Reads configuration's API 'auth' key and determines auth method if any
@@ -11,9 +12,10 @@ const jwtChecker = require('express-jwt'),
  */
 
 function determineAuth() {  
+  
     if (peliasConfig.api.auth === 'jwt') {
       return jwtChecker({
-        secret: process.env.JWT_SECRET
+        secret: fs.readFileSync(process.env.PUBLIC_KEY_PATH)
       });
     }
     else if(peliasConfig.api.auth === 'geoaxis_jwt') {
