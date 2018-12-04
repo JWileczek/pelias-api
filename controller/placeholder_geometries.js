@@ -35,7 +35,13 @@ function setup(apiConfig, esclient, should_execute) {
             query_type: 'fallback'
         };
 
-        res.data = docs;
+        res.data = res.data.map( function(doc) {
+                    var matchingDoc = docs.find( esDoc => esDoc._id === doc._id);
+                    if(matchingDoc && matchingDoc.hasOwnProperty('polygon')) {
+                        doc.polygon = matchingDoc.polygon;
+                    }
+                    return doc;
+        });
 
         const messageParts = [
             '[controller:placeholder_geometries]',
