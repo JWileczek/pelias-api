@@ -30,10 +30,11 @@ const middleware = {
 const controllers = { 
   coarse_reverse: require('../controller/coarse_reverse'),
   mdToHTML: require('../controller/markdownToHtml'),
-  // libpostal: require('../controller/libpostal'),
-  // structured_libpostal: require('../controller/structured_libpostal'),
+   libpostal: require('../controller/libpostal'),
+   structured_libpostal: require('../controller/structured_libpostal'),
   place: require('../controller/place'),
-  // placeholder: require('../controller/placeholder'),
+   placeholder: require('../controller/placeholder'),
+  placeholder_geometries: require('../controller/placeholder_geometries'),
   search: require('../controller/search'),
   search_with_ids: require('../controller/search_with_ids'),
   status: require('../controller/status'),
@@ -69,7 +70,7 @@ const postProc = {
   parseBoundingBox: require('../middleware/parseBBox'),
   normalizeParentIds: require('../middleware/normalizeParentIds'),
   assignLabels: require('../middleware/assignLabels'),
-  // changeLanguage: require('../middleware/changeLanguage'),
+   changeLanguage: require('../middleware/changeLanguage'),
   sortResponseData: require('../middleware/sortResponseData')
 };
 
@@ -87,6 +88,9 @@ const isRequestSourcesOnlyWhosOnFirst = require('../controller/predicates/is_req
 const hasRequestParameter = require('../controller/predicates/has_request_parameter');
 const hasParsedTextProperties = require('../controller/predicates/has_parsed_text_properties');
 
+//checking for polygon geometries request parameter
+const isPolygonRequest = require('../controller/predicates/polygons_parameter_present');
+
 // shorthand for standard early-exit conditions
 const hasResponseDataOrRequestErrors = any(hasResponseData, hasRequestErrors);
 const hasAdminOnlyResults = not(hasResultsAtLayers(['venue', 'address', 'street']));
@@ -97,11 +101,11 @@ const hasNumberButNotStreet = all(
 );
 
 const serviceWrapper = require('pelias-microservice-wrapper').service;
-// const PlaceHolder = require('../service/configurations/PlaceHolder');
+ const PlaceHolder = require('../service/configurations/PlaceHolder');
 const PointInPolygon = require('../service/configurations/PointInPolygon');
 const Language = require('../service/configurations/Language');
 const Interpolation = require('../service/configurations/Interpolation');
-// const Libpostal = require('../service/configurations/Libpostal');
+ const Libpostal = require('../service/configurations/Libpostal');
 
 /**
  * Append routes to app
@@ -117,129 +121,135 @@ function addRoutes(app, peliasConfig) {
   const pipService = serviceWrapper(pipConfiguration);
   const isPipServiceEnabled = _.constant(pipConfiguration.isEnabled());
 
-  // const placeholderConfiguration = new PlaceHolder(_.defaultTo(peliasConfig.api.services.placeholder, {}));
-  // const placeholderService = serviceWrapper(placeholderConfiguration);
-  // const isPlaceholderServiceEnabled = _.constant(placeholderConfiguration.isEnabled());
+  const placeholderConfiguration = new PlaceHolder(_.defaultTo(peliasConfig.api.services.placeholder, {}));
+  const placeholderService = serviceWrapper(placeholderConfiguration);
+  const isPlaceholderServiceEnabled = _.constant(placeholderConfiguration.isEnabled());
 
-  // const changeLanguageConfiguration = new Language(_.defaultTo(peliasConfig.api.services.placeholder, {}));
-  // const changeLanguageService = serviceWrapper(changeLanguageConfiguration);
-  // const isChangeLanguageEnabled = _.constant(changeLanguageConfiguration.isEnabled());
+   const changeLanguageConfiguration = new Language(_.defaultTo(peliasConfig.api.services.placeholder, {}));
+   const changeLanguageService = serviceWrapper(changeLanguageConfiguration);
+   const isChangeLanguageEnabled = _.constant(changeLanguageConfiguration.isEnabled());
 
   const interpolationConfiguration = new Interpolation(_.defaultTo(peliasConfig.api.services.interpolation, {}));
   const interpolationService = serviceWrapper(interpolationConfiguration);
   const isInterpolationEnabled = _.constant(interpolationConfiguration.isEnabled());
 
   // standard libpostal should use req.clean.text for the `address` parameter
-  // const libpostalConfiguration = new Libpostal(
-  //   _.defaultTo(peliasConfig.api.services.libpostal, {}),
-  //   _.property('clean.text'));
-  // const libpostalService = serviceWrapper(libpostalConfiguration);
+   const libpostalConfiguration = new Libpostal(
+     _.defaultTo(peliasConfig.api.services.libpostal, {}),
+     _.property('clean.text'));
+   const libpostalService = serviceWrapper(libpostalConfiguration);
 
   // structured libpostal should use req.clean.parsed_text.address for the `address` parameter
-  // const structuredLibpostalConfiguration = new Libpostal(
-  //   _.defaultTo(peliasConfig.api.services.libpostal, {}),
-  //   _.property('clean.parsed_text.address'));
-  // const structuredLibpostalService = serviceWrapper(structuredLibpostalConfiguration);
+   const structuredLibpostalConfiguration = new Libpostal(
+     _.defaultTo(peliasConfig.api.services.libpostal, {}),
+     _.property('clean.parsed_text.address'));
+   const structuredLibpostalService = serviceWrapper(structuredLibpostalConfiguration);
 
   // fallback to coarse reverse when regular reverse didn't return anything
   const coarseReverseShouldExecute = all(
     isPipServiceEnabled, not(hasRequestErrors), not(hasResponseData)
   );
 
-  // const libpostalShouldExecute = all(
-  //   not(hasRequestErrors),
-  //   not(isRequestSourcesOnlyWhosOnFirst)
-  // );
+   const libpostalShouldExecute = all(
+     not(hasRequestErrors),
+     not(isRequestSourcesOnlyWhosOnFirst)
+   );
 
   // for libpostal to execute for structured requests, req.clean.parsed_text.address must exist
-  // const structuredLibpostalShouldExecute = all(
-  //   not(hasRequestErrors),
-  //   hasParsedTextProperties.all('address')
-  // );
+   const structuredLibpostalShouldExecute = all(
+     not(hasRequestErrors),
+     hasParsedTextProperties.all('address')
+   );
 
   // execute placeholder if libpostal only parsed as admin-only and needs to
   //  be geodisambiguated
-  // const placeholderGeodisambiguationShouldExecute = all(
-  //   not(hasResponseDataOrRequestErrors),
-  //   isPlaceholderServiceEnabled,
-  //   // check request.clean for several conditions first
-  //   not(
-  //     any(
-  //       // layers only contains venue, address, or street
-  //       isOnlyNonAdminLayers,
-  //       // don't geodisambiguate if categories were requested
-  //       hasRequestCategories
-  //     )
-  //   ),
-  //   any(
-  //     // only geodisambiguate if libpostal returned only admin areas or libpostal was skipped
-  //     isAdminOnlyAnalysis,
-  //     isRequestSourcesOnlyWhosOnFirst
-  //   )
-  // );
+   const placeholderGeodisambiguationShouldExecute = all(
+     not(hasResponseDataOrRequestErrors),
+     isPlaceholderServiceEnabled,
+     // check request.clean for several conditions first
+     not(
+       any(
+         // layers only contains venue, address, or street
+         isOnlyNonAdminLayers,
+         // don't geodisambiguate if categories were requested
+         hasRequestCategories
+       )
+     ),
+     any(
+       // only geodisambiguate if libpostal returned only admin areas or libpostal was skipped
+       isAdminOnlyAnalysis,
+       isRequestSourcesOnlyWhosOnFirst
+     )
+   );
 
   // execute placeholder if libpostal identified address parts but ids need to
   //  be looked up for admin parts
-  // const placeholderIdsLookupShouldExecute = all(
-  //   not(hasResponseDataOrRequestErrors),
-  //   isPlaceholderServiceEnabled,
-  //   // check clean.parsed_text for several conditions that must all be true
-  //   all(
-  //     // run placeholder if clean.parsed_text has 'street'
-  //     hasParsedTextProperties.any('street'),
-  //     // don't run placeholder if there's a query or category
-  //     not(hasParsedTextProperties.any('query', 'category')),
-  //     // run placeholder if there are any adminareas identified
-  //     hasParsedTextProperties.any('neighbourhood', 'borough', 'city', 'county', 'state', 'country')
-  //   )
-  // );
+   const placeholderIdsLookupShouldExecute = all(
+     not(hasResponseDataOrRequestErrors),
+     isPlaceholderServiceEnabled,
+     // check clean.parsed_text for several conditions that must all be true
+     all(
+       // run placeholder if clean.parsed_text has 'street'
+       hasParsedTextProperties.any('street'),
+       // don't run placeholder if there's a query or category
+       not(hasParsedTextProperties.any('query', 'category')),
+       // run placeholder if there are any adminareas identified
+       hasParsedTextProperties.any('neighbourhood', 'borough', 'city', 'county', 'state', 'country')
+     )
+   );
 
-  // const searchWithIdsShouldExecute = all(
-  //   not(hasRequestErrors),
-  //   // don't search-with-ids if there's a query or category
-  //   not(hasParsedTextProperties.any('query', 'category')),
-  //   // there must be a street
-  //   hasParsedTextProperties.any('street')
-  // );
+
+   const searchWithIdsShouldExecute = all(
+     not(hasRequestErrors),
+     // don't search-with-ids if there's a query or category
+     not(hasParsedTextProperties.any('query', 'category')),
+     // there must be a street
+     hasParsedTextProperties.any('street')
+   );
 
   // placeholder should have executed, useful for determining whether to actually
   //  fallback or not (don't fallback to old search if the placeholder response
   //  should be honored as is)
-  // const placeholderShouldHaveExecuted = any(
-  //   placeholderGeodisambiguationShouldExecute,
-  //   placeholderIdsLookupShouldExecute
-  // );
+   const placeholderShouldHaveExecuted = any(
+     placeholderGeodisambiguationShouldExecute,
+     placeholderIdsLookupShouldExecute
+   );
+
+  const placeholderGeometriesShouldExecute = all(
+      hasResponseData,
+      isPolygonRequest
+  );
 
   // don't execute the cascading fallback query IF placeholder should have executed
   //  that way, if placeholder didn't return anything, don't try to find more things the old way
-  // const fallbackQueryShouldExecute = all(
-  //   not(hasRequestErrors),
-  //   not(hasResponseData),
-  //   not(placeholderShouldHaveExecuted)
-  // );
+   const fallbackQueryShouldExecute = all(
+     not(hasRequestErrors),
+     not(hasResponseData),
+     not(placeholderShouldHaveExecuted)
+   );
 
   // defer to addressit for analysis IF there's no response AND placeholder should not have executed
-  // const shouldDeferToAddressIt = all(
-  //   not(hasRequestErrors),
-  //   not(hasResponseData),
-  //   // not(placeholderShouldHaveExecuted)
-  // );
+   const shouldDeferToAddressIt = all(
+     not(hasRequestErrors),
+     not(hasResponseData),
+     not(placeholderShouldHaveExecuted)
+   );
 
   // call very old prod query if addressit was the parser
-  // const oldProdQueryShouldExecute = all(
-  //   not(hasRequestErrors),
-  //   isAddressItParse
-  // );
+   const oldProdQueryShouldExecute = all(
+     not(hasRequestErrors),
+     isAddressItParse
+   );
 
   // get language adjustments if:
   // - there's a response
   // - theres's a lang parameter in req.clean
-  // const changeLanguageShouldExecute = all(
-  //   hasResponseData,
-  //   not(hasRequestErrors),
-  //   isChangeLanguageEnabled,
-  //   hasRequestParameter('lang')
-  // );
+   const changeLanguageShouldExecute = all(
+     hasResponseData,
+     not(hasRequestErrors),
+     isChangeLanguageEnabled,
+     hasRequestParameter('lang')
+   );
 
   // interpolate if:
   // - there's a number and street
@@ -282,16 +292,16 @@ function addRoutes(app, peliasConfig) {
       middleware.requestLanguage,
       middleware.calcSize(),
       //disable libpostal until a method for returning polygons and other datasets can be implemented
-      // controllers.libpostal(libpostalService, libpostalShouldExecute),
-      // controllers.placeholder(placeholderService, geometricFiltersApply, placeholderGeodisambiguationShouldExecute),
-      // controllers.placeholder(placeholderService, geometricFiltersDontApply, placeholderIdsLookupShouldExecute),
-      // controllers.search_with_ids(peliasConfig.api, esclient, queries.address_using_ids, searchWithIdsShouldExecute),
+       controllers.libpostal(libpostalService, libpostalShouldExecute),
+       controllers.placeholder(placeholderService, geometricFiltersApply, placeholderGeodisambiguationShouldExecute),
+       controllers.placeholder(placeholderService, geometricFiltersDontApply, placeholderIdsLookupShouldExecute),
+       controllers.placeholder_geometries(peliasConfig.api, esclient, placeholderGeometriesShouldExecute),
+       controllers.search_with_ids(peliasConfig.api, esclient, queries.address_using_ids, searchWithIdsShouldExecute),
       // // 3rd parameter is which query module to use, use fallback first, then
       // //  use original search strategy if first query didn't return anything
-      // controllers.search(peliasConfig.api, esclient, queries.cascading_fallback, fallbackQueryShouldExecute),
-      // sanitizers.defer_to_addressit(shouldDeferToAddressIt),
-      // controllers.search(peliasConfig.api, esclient, queries.very_old_prod, oldProdQueryShouldExecute),
-      controllers.search(peliasConfig.api, esclient, queries.very_old_prod, () => {return true}),
+       controllers.search(peliasConfig.api, esclient, queries.cascading_fallback, fallbackQueryShouldExecute),
+       sanitizers.defer_to_addressit(shouldDeferToAddressIt),
+        controllers.search(peliasConfig.api, esclient, queries.very_old_prod, oldProdQueryShouldExecute),
       postProc.trimByGranularity(),
       postProc.distances('focus.point.'),
       postProc.confidenceScores(peliasConfig.api),
@@ -304,7 +314,7 @@ function addRoutes(app, peliasConfig) {
       postProc.renamePlacenames(),
       postProc.parseBoundingBox(),
       postProc.normalizeParentIds(),
-      // postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
+       postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
       postProc.assignLabels(),
       postProc.geocodeJSON(peliasConfig.api, base),
       postProc.sendJSON
@@ -313,7 +323,7 @@ function addRoutes(app, peliasConfig) {
       sanitizers.structured_geocoding.middleware(peliasConfig.api),
       middleware.requestLanguage,
       middleware.calcSize(),
-      // controllers.structured_libpostal(structuredLibpostalService, structuredLibpostalShouldExecute),
+       controllers.structured_libpostal(structuredLibpostalService, structuredLibpostalShouldExecute),
       controllers.search(peliasConfig.api, esclient, queries.structured_geocoding, not(hasResponseDataOrRequestErrors)),
       postProc.trimByGranularityStructured(),
       postProc.distances('focus.point.'),
@@ -326,7 +336,7 @@ function addRoutes(app, peliasConfig) {
       postProc.renamePlacenames(),
       postProc.parseBoundingBox(),
       postProc.normalizeParentIds(),
-      // postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
+       postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
       postProc.assignLabels(),
       postProc.geocodeJSON(peliasConfig.api, base),
       postProc.sendJSON
@@ -343,7 +353,7 @@ function addRoutes(app, peliasConfig) {
       postProc.renamePlacenames(),
       postProc.parseBoundingBox(),
       postProc.normalizeParentIds(),
-      // postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
+       postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
       postProc.assignLabels(),
       postProc.geocodeJSON(peliasConfig.api, base),
       postProc.sendJSON
@@ -364,7 +374,7 @@ function addRoutes(app, peliasConfig) {
       postProc.renamePlacenames(),
       postProc.parseBoundingBox(),
       postProc.normalizeParentIds(),
-      // postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
+       postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
       postProc.assignLabels(),
       postProc.geocodeJSON(peliasConfig.api, base),
       postProc.sendJSON
@@ -384,7 +394,7 @@ function addRoutes(app, peliasConfig) {
       postProc.renamePlacenames(),
       postProc.parseBoundingBox(),
       postProc.normalizeParentIds(),
-      // postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
+       postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
       postProc.assignLabels(),
       postProc.geocodeJSON(peliasConfig.api, base),
       postProc.sendJSON
@@ -398,7 +408,7 @@ function addRoutes(app, peliasConfig) {
       postProc.renamePlacenames(),
       postProc.parseBoundingBox(),
       postProc.normalizeParentIds(),
-      // postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
+       postProc.changeLanguage(changeLanguageService, changeLanguageShouldExecute),
       postProc.assignLabels(),
       postProc.geocodeJSON(peliasConfig.api, base),
       postProc.sendJSON
